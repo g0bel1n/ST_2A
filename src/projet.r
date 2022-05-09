@@ -41,13 +41,13 @@ tsData <- ts(head(tsData, -2), start = c(1990, 1), frequency = 12)
 # %%
 m <- tseries::adf.test(tsData)
 print(m)
-# Le test de Dickey Fuller Augmenté nous permet de vérifier si notre série est suffisament différenciée.
+# Le test de Dickey Fuller Augmenté nous permet de vérifier si notre série est suffismament différenciée.
 # %%
 
 # %%
 summary(ur.kpss(tsData))
 summary(ur.pp(tsData))
-# On complète le test de Dickey Fuller par celui KPSS et celui Philip-Perron
+# On complète le test de Dickey Fuller par celui KPSS et celui Phillips-Perron
 # %%
 # %%
 library(forecast)
@@ -68,7 +68,7 @@ acf(tsData) # suggests MA 1-2
 model_maxi <- arima(dindice, order = c(9, 0, 3))
 residus_maxi <- residuals(model_maxi)
 write.csv(confint(model_maxi))
-# On affiche les intervalles de confiances des coefficients de la modélisation. Sont-ils tous significatifs ?
+# On affiche les intervalles de confiance des coefficients de la modélisation. Sont-ils tous significatifs ?
 # %%
 
 
