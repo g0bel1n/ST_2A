@@ -1,3 +1,4 @@
+# %%
 library(forecast)
 library(comprehenr)
 library(urca)
@@ -5,7 +6,7 @@ library(stats)
 library(car)
 
 # %%
-
+# %%
 data <- read.csv("data/valeurs_mensuelles.csv", sep = ";", header = TRUE)
 # %%
 # %%
@@ -35,25 +36,24 @@ seasonnalyadjustedts <- indice - componentsts$seasonal
 tsData <- diff(seasonnalyadjustedts, differences = 1)
 
 components.ts <- decompose(tsData)
-# plot(components.ts)
+plot(components.ts)
 # %%
 
 # %%
 last_points <- ts(head(tsData, 2), start = c(2022, 1), frequency = 12)
-
 tsData <- ts(head(tsData, -2), start = c(1990, 1), frequency = 12)
 
 # %%
 
 # %%
-
 m <- tseries::adf.test(tsData)
-adf.out <- ur.df(tsData)
+print(m)
 # %%
 
 # %%
-
-
+summary(ur.kpss(tsData))
+summary(ur.pp(tsData))
+# %%
 # %%
 library(forecast)
 auto.arima(tsData, stepwise = FALSE, approximation = FALSE, max.p = 6, max.q = 6, ic = c("aic"), parallel = TRUE)
@@ -61,19 +61,6 @@ auto.arima(tsData, stepwise = FALSE, approximation = FALSE, max.p = 6, max.q = 6
 # %%
 
 # %%
-png("ressources/root103.png")
-Arima(tsData, order = c(1, 0, 3), xreg = seq_along(tsData)) %>%
-    autoplot()
-
-dev.off()
-
-# %%
-
-# %%
-summary(Arima(tsData, order = c(5, 0, 3), xreg = seq_along(tsData)))
-# %%
-
-
 pacf(tsData)
 # %% suggests AR 8-9
 
@@ -82,26 +69,15 @@ acf(tsData) # MA 1-2
 # %%
 
 
-# print(m)
-# p-value = 0.01
-# C'est mieux. Regardons maintenant les autocorrelations :
-
-# acf(tsData)
-# Suggests a MA 2 or 3
-
 # %%
 model_maxi <- arima(dindice, order = c(9, 0, 3))
 residus_maxi <- residuals(model_maxi)
 write.csv(confint(model_maxi))
 
 # %%
-# %%
 
-model_2 <- arima(dindice, order = c(1, 0, 3))
-write.csv(confint(model_2))
 
 # %%
-
 model <- Arima(tsData, order = c(0, 0, 0))
 AIC <- AIC(model)
 BIC <- AIC(model, k = log(length(dindice)))
@@ -118,6 +94,7 @@ for (AR in 0:9) {
 }
 
 # %%
+
 # %%
 print(results[which.min(results$AIC), ])
 print(results[which.min(results$BIC), ])
@@ -127,6 +104,21 @@ write.csv(results)
 
 # %%
 
+# %%
+png("ressources/root103.png")
+Arima(tsData, order = c(1, 0, 3), xreg = seq_along(tsData)) %>%
+    autoplot()
+
+dev.off()
+# %%
+# %%
+
+model_2 <- Arima(tsData, order = c(1, 0, 3), seasonal = c(0, 0, 0), include.mean = FALSE)
+write.csv(confint(model_2))
+
+# %%
+
+# %%
 png("acfrresidus.png")
 acf(model_2$residuals) # rien de significatif
 dev.off()
