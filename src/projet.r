@@ -1,27 +1,27 @@
-
+library(forecast)
 library(comprehenr)
 library(urca)
 library(stats)
 
 # %%
 
-data <- data.frame(read.csv("valeurs_mensuelles.csv", sep = ";", header = TRUE))
-data <- data[-c(1, 2, 3), ]
-data$Indice.CVS.CJO.de.la.production.industrielle..base.100.en.2015....Fabrication.de.bière..NAF.rév..2..niveau.classe..poste.11.05. <- as.double(data$Indice.CVS.CJO.de.la.production.industrielle..base.100.en.2015....Fabrication.de.bière..NAF.rév..2..niveau.classe..poste.11.05.)
-indice <- ts(data$Indice.CVS.CJO.de.la.production.industrielle..base.100.en.2015....Fabrication.de.bière..NAF.rév..2..niveau.classe..poste.11.05., start = c(1990, 1), frequency = 12)
+data <- read.csv("data/valeurs_mensuelles.csv", sep = ";", header = TRUE)
+# %%
+# %%
 
-dindice <- diff(indice)
-
-auto.arima(dindice)
-
+indice <- ts(rev(data$Indice.CVS.CJO.de.la.production.industrielle..base.100.en.2015....Fabrication.de.bière..NAF.rév..2..niveau.classe..poste.11.05.), start = c(1990, 1), frequency = 12)
+plot(indice)
 # %%
 
 # %%
+print(indice)
+# %%
 
+# %%
 indice <- ts(head(indice, -2), start = c(1990, 1), frequency = 12)
 last_points <- ts(head(indice, 2), start = c(2022, 1), frequency = 12)
-print(indice)
-print(last_points)
+dindice <- diff(indice)
+
 # %%
 
 
@@ -53,16 +53,29 @@ adf.out <- ur.df(tsData)
 
 # %%
 library(forecast)
-auto.arima(dindice)
+auto.arima(tsData, stepwise = FALSE, approximation = FALSE, max.p = 6, max.q = 6, ic = c("aic"), parallel = TRUE)
+
+# %%
+
+# %%
+png("ressources/root103.png")
+Arima(tsData, order = c(1, 0, 3), xreg = seq_along(tsData)) %>%
+    autoplot()
+
+dev.off()
+
+# %%
+
+# %%
+summary(Arima(tsData, order = c(5, 0, 3), xreg = seq_along(tsData)))
 # %%
 
 
-# %%
-pacf(dindice)
+pacf(tsData)
 # %% suggests AR 8-9
 
 # %%
-acf(dindice) # MA 1-2
+acf(tsData) # MA 1-2
 # %%
 
 
@@ -80,29 +93,38 @@ write.csv(confint(model_maxi))
 
 # %%
 # %%
-model_2 <- arima(tsData, order = c(1, 0, 3))
+
+model_2 <- arima(dindice, order = c(3, 0, 1))
 write.csv(confint(model_2))
-# All coefficients are significant
 
 # %%
 
-# %%
-
-model <- arima(dindice, order = c(0, 0, 0))
+model <- Arima(tsData, order = c(0, 0, 0))
 AIC <- AIC(model)
 BIC <- AIC(model, k = log(length(dindice)))
-results <- data.frame(AR = c(0), MA = c(0), AIC = c(AIC), BIC = c(BIC))
-for (AR in 1:9) {
-    for (MA in 1:3) {
-        model <- arima(dindice, order = c(AR, 0, MA))
-        AIC <- AIC(model)
-        BIC <- AIC(model, k = log(length(dindice)))
-        results[nrow(results) + 1, ] <- c(AR, MA, AIC, BIC)
+results <- data.frame(AR = c(0), MA = c(0), AIC = c(AIC), BIC = c(BIC), CHECK_ROOT = c(CHECK_ROOT))
+for (AR in 0:9) {
+    for (MA in 0:3) {
+        if (AR + MA != 0) {
+            model <- Arima(tsData, order = c(AR, 0, MA))
+            ur.kpss(model)
+            AIC <- AIC(model)
+            BIC <- BIC(model)
+            results[nrow(results) + 1, ] <- c(AR, MA, AIC, BIC)
+        }
     }
 }
-print(results)
-# The lowest BIC is reached for 1,0,3
+
 # %%
+# %%
+print(results[which.min(results$AIC), ])
+print(results[which.min(results$BIC), ])
+# %%
+
+# %%
+library(urca)
+ur.kpss(model.)
+# %%%
 
 # %%
 write.csv(results)
