@@ -119,14 +119,14 @@ write.csv(confint(model_2))
 # %%
 
 # %%
-png("acfrresidus.png")
+png("ressources/acfrresidus.png")
 acf(model_2$residuals) # rien de significatif
 dev.off()
 
 # %%
 # %%
 library(FitAR)
-png("LjunBoxTest.png")
+png("ressources/LjunBoxTest.png")
 boxresult <- LjungBoxTest(model_2$residuals) # p-values au dessus de 0.05 -> pas de significativité, pas de pattern
 plot(boxresult[, 3], main = "Ljung-Box Q Test", ylab = "P-values", xlab = "Lag")
 
@@ -134,7 +134,7 @@ dev.off()
 # %%
 # %%
 
-png("qqnorm.png")
+png("ressources/qqnorm.png")
 qqnorm(model_2$residuals)
 qqline(model_2$residuals) # Le long de la ligne et non pas éparpillés
 dev.off()
@@ -149,7 +149,7 @@ print(model_2$coef[1])
 
 # %%
 # %%
-png("ellispe.png")
+png("ressources/ellispe.png")
 library(car)
 a <- predict(model_2, 2)
 df <- data.frame(X_T1 = (-1000:700) / 100, X_T2 = (-1000:700) / 100)
@@ -168,7 +168,7 @@ dev.off()
 
 
 # %%
-png("forecast.png")
+png("ressources/forecast.png")
 forecast(model_2, 10, ) %>%
     autoplot()
 dev.off()
